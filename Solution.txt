@@ -1,0 +1,36 @@
+
+create or replace type personType as object(
+	name varchar(20),
+	dob date,
+	member function funAge return integer,
+	MEMBER PROCEDURE display (SELF IN OUT NOCOPY personType)
+);
+
+CREATE OR REPLACE TYPE BODY personType AS
+  MEMBER FUNCTION funAge RETURN integer IS
+  BEGIN
+    RETURN trunc(months_between(sysdate, dob)/12);
+  END;
+  MEMBER PROCEDURE display (SELF IN OUT NOCOPY personType) IS
+  BEGIN
+    DBMS_OUTPUT.PUT_LINE('Name: ' || name);
+    DBMS_OUTPUT.PUT_LINE('Age: '||self.funAge());
+
+  END;
+END;
+
+
+create table personTable of personType;
+insert into personTable values('ABC',date '1999-09-11');
+insert into personTable values('DEF',date '1999-04-20');
+select p.funAge() as Age from personTable p;
+
+DECLARE
+  person personType;
+BEGIN -- PL/SQL block for selecting a solid and displaying details
+  SELECT VALUE(s) INTO person FROM personTable s where s.name='ABC';
+  person.display();
+END;
+
+
+
